@@ -145,8 +145,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
         with:
-          upload_url: "${{ needs.calculate-release-url.outputs.release-url }}"
-          asset_path: vscode-metaed.vsix
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./vscode-metaed.vsix
           asset_name: vscode-metaed.vsix
           asset_content_type: application/octet
 
@@ -163,8 +163,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
         with:
-          upload_url: "${{ needs.calculate-release-url.outputs.release-url }}"
-          asset_path: "vscode-metaed-ide-SBOM"
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./vscode-metaed-ide-SBOM
           asset_name: "${{ env.PACKAGE_NAME }}-SBOM.zip"
           asset_content_type: application/octet
     
