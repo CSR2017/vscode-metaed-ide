@@ -7,8 +7,7 @@ name: On Pre-Release
 on:
   release:
     types:
-      - prereleased
-  workflow_dispatch:    
+      - prereleased 
 
 env:
   GITHUB_TOKEN: ${{ secrets.PAT_ATTACH_TO_RELEASE }}
@@ -99,38 +98,6 @@ jobs:
           sbom_hash=$(cat ${{ env.MANIFEST_FILE }}.sha256)
           echo "sbom-hash-code=$sbom_hash"
           echo "sbom-hash-code=$sbom_hash" >> $GITHUB_OUTPUT
-
-  calculate-release-url:
-    name: Calculate Release Url
-    runs-on: ubuntu-latest
-    needs: package
-    permissions:
-      actions: read
-      contents: write
-    outputs:
-      release-url: ${{ steps.release-url.outputs.url }}
-    steps:
-     - name: Calculate Url
-       shell: pwsh
-       id: release-url
-       run: |
-          $release = "${{ github.ref_name }}"
-          $repo = "${{ github.repository }}"
-          $token = "${{ env.GITHUB_TOKEN }}"
-
-          $url = "https://api.github.com/repos/$repo/releases/tags/$release"
-
-          $gh_headers = @{
-              "Accept"        = "application/vnd.github+json"
-              "Authorization" = "Bearer $token"
-          }
-
-          $response = Invoke-RestMethod -Uri $url -Headers $gh_headers
-          $releaseId = $response.id
-
-          $releaseUrl = "https://uploads.github.com/repos/$repo/releases/$releaseId/assets"
-
-          "url=$releaseUrl" >> $env:GITHUB_OUTPUT
        
   packages-attach:
     name: Attach Package to Release
@@ -160,7 +127,7 @@ jobs:
   sbom-attach:
     name: Attach SBOM file
     runs-on: ubuntu-latest
-    needs: calculate-release-url
+    needs: package
     permissions:
       actions: read
       contents: write
