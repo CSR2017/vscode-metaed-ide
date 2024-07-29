@@ -138,7 +138,9 @@ jobs:
           name: "${{ env.PACKAGE_NAME }}-SBOM"
           path: ${{ env.MANIFEST_FILE }}
           sha256: "${{ needs.package.outputs.sbom-hash-code }}"
-          
+      - name: List files
+        shell: bash       
+        run: ls -a
       - name: Attach to release
         uses: actions/upload-release-asset@v1
         env:
