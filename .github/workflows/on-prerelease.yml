@@ -138,16 +138,21 @@ jobs:
           name: "${{ env.PACKAGE_NAME }}-SBOM"
           path: ${{ env.MANIFEST_FILE }}
           sha256: "${{ needs.package.outputs.sbom-hash-code }}"
-      - name: List files
-        shell: bash       
-        run: ls -a
+      - name: Compress SBOM file
+        id: compress
+        shell: pwsh
+        run: |
+          $file = "${{ env.MANIFEST_FILE }}"
+          $uploadName = "${{ env.PACKAGE_NAME }}-SBOM.zip"
+          Compress-Archive $file -DestinationPath $uploadName
+          "uploadName=$uploadName" >> $env:GITHUB_OUTPUT          
       - name: Attach to release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: "./${{ env.PACKAGE_NAME }}-SBOM"
-          asset_name: "${{ env.PACKAGE_NAME }}-SBOM"
+          asset_path: "./${{ steps.compress.outputs.uploadName }}"
+          asset_name: "${{ steps.compress.outputs.uploadName }}"
           asset_content_type: application/octet
     
