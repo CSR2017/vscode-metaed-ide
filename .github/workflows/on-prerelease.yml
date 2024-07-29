@@ -114,14 +114,11 @@ jobs:
           path: vscode-metaed.vsix
           sha256: "${{ needs.package.outputs.hash-code }}"
           
-     - name: Upload release asset with retry
-       run: |
-          curl \
-            -XPOST \
-            -H "Authorization: token ${{ env.GITHUB_TOKEN }}" \
-            -H "Content-Type: application/octet" \
-            --data-binary @./vscode-metaed.vsix \
-            "${{ github.event.release.upload_url }}?name=vscode-metaed.vsix&label=vscode-metaed.vsix";
+     - name: Attach package
+       uses: softprops/action-gh-release@v2
+       if: startsWith(github.ref, 'refs/tags/')
+       with:
+          files: vscode-metaed.vsix
 
   sbom-attach:
     name: Attach SBOM file
