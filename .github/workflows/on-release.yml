@@ -9,7 +9,8 @@ on:
   release:
     types:
       - released
-
+  workflow_dispatch:
+  
 env:
   VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
@@ -34,8 +35,9 @@ jobs:
         run: |
           file="vscode-metaed.vsix"
           tag="${{ github.ref_name }}"
+          asset_name="vscode-metaed.vsix"
 
-          url=$(echo '${{ toJson(github.event.release) }}' | jq --raw-output --arg t "$tag" 'select(.tag_name==$t) | .assets[] | .browser_download_url')
+          url=$(echo '${{ toJson(github.event.release) }}' | jq --raw-output --arg t "$tag" --arg an "$asset_name" 'select(.tag_name==$t) | .assets[] | select(.name==$an) | .browser_download_url')
           curl -LO $url --fail
           if [ -s $file ]; then
             echo "File downloaded!"
@@ -44,43 +46,4 @@ jobs:
             exit 1
           fi
 
-      - name: Publish to the marketplace
-        run: npx vsce publish --allow-star-activation --packagePath vscode-metaed.vsix
-
-  delete-pre-releases:
-    name: Delete Unnecessary Pre-Releases
-    needs: publish
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the repo
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Delete other pre-releases and their tags
-        shell: pwsh
-        run: |
-          $release = "${{ github.ref_name }}"
-          $repo = "${{ github.repository }}"
-          $token = "${{ secrets.GITHUB_TOKEN }}"
-
-          $page = 1
-          $release_list = @()
-
-          Do {
-
-            $url = "https://api.github.com/repos/$repo/releases?per_page=100&page=$page"
-            $gh_headers = @{
-                "Accept"        = "application/vnd.github+json"
-                "Authorization" = "Bearer $token"
-            }
-
-            $release_list = Invoke-RestMethod $url -Headers $gh_headers
-
-            $release_list | ForEach-Object {
-                if ($_.tag_name -like "*-dev.*" -and $_.prerelease) {
-                    "Deleting pre-release $($_.tag_name)" | Write-Output
-                    Invoke-RestMethod -Method Delete -Uri $_.url -Headers $gh_headers
-                }
-            }
-
-            $page += 1
-          } While ($release_list.count -gt 0)
+  
