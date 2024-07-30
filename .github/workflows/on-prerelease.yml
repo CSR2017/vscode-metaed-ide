@@ -119,6 +119,7 @@ jobs:
        if: startsWith(github.ref, 'refs/tags/')
        with:
           files: vscode-metaed.vsix
+          token: ${{ env.GITHUB_TOKEN }}
 
   sbom-attach:
     name: Attach SBOM file
@@ -147,4 +148,5 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: "${{ steps.compress.outputs.uploadName }}"
+          token: ${{ env.GITHUB_TOKEN }}
     
