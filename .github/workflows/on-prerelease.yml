@@ -120,6 +120,26 @@ jobs:
        with:
           files: vscode-metaed.vsix
           token: ${{ env.GITHUB_TOKEN }}
+          
+     - name: Retrieve VSIX from release
+       run: |
+          file="vscode-metaed.vsix"
+          tag="${{ github.ref_name }}"
+
+          url=$(echo '${{ toJson(github.event.release) }}' | jq --raw-output --arg t "$tag" 'select(.tag_name==$t) | .assets[] | .browser_download_url')
+          echo $url
+          error_message=$(curl -LO $url --fail 2>&1)
+          if [ $? -ne 0 ]; then
+            echo "Error: $error_message"
+            # Further error handling
+          fi
+          curl -LO $url --fail
+          if [ -s $file ]; then
+            echo "File downloaded!"
+          else
+            echo "Error downloading file. Verify url: $url"
+            exit 1
+          fi
 
   sbom-attach:
     name: Attach SBOM file
